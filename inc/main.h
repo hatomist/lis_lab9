@@ -20,12 +20,13 @@ typedef struct {char *title; double area; double population;} record;
 int main(int argc, char *argv[]);
 void help(char *exec_name);
 int tui(FILE *pFile);
-int show_records(record *records, size_t records_num);
-int add_records(record *records, size_t records_num);
-int delete_records(record *records, size_t records_num);
-int sort_records(record *records, size_t records_num);
-int delete_file(record *records, size_t records_num);
-int exit_program(record *records, size_t records_num);
+int show_records(const record **records, const size_t *records_num);
+int add_records(record **records, size_t *records_num);
+int delete_records(record **records, size_t *records_num);
+int change_records_sort(record **records, size_t *records_num);
+int delete_file(record **records, size_t *records_num);
+int sort_records(record **records, size_t *records_num);
+int exit_program(record **records, size_t *records_num);
 size_t get_file_size(FILE *pFile);
 
 

@@ -1,6 +1,8 @@
 #include "main.h"
 //#include "gui.h"
 
+int sort_type = 0;
+
 int main(int argc, char *argv[])
 {
     int opt;
@@ -74,9 +76,9 @@ int tui(FILE *pFile)
 
     const char* menu_items[MENU_ITEM_COUNT] = {"Show records", "Add record(s)", "Delete record(s)", "Sort by parameter",
                                          "Delete file", "Exit program"};
-    int (*menu_funcs[MENU_ITEM_COUNT]) (record *records, size_t records_num) = {show_records, add_records,
-                                                                                delete_records, sort_records,
-                                                                                delete_file, exit_program};
+    int (*menu_funcs[MENU_ITEM_COUNT]) (record **records, size_t *records_num) = {show_records, add_records,
+                                                                                  delete_records, change_records_sort,
+                                                                                  delete_file, exit_program};
 
     size_t file_size = get_file_size(pFile);
     record* records;
@@ -101,7 +103,7 @@ int tui(FILE *pFile)
         fscanf(pFile, "%[^\n]", data);
         fgetc(pFile);
 
-        int sort_type = atoi(data);
+        sort_type = atoi(data);
 
         fscanf(pFile, "%[^\n]", data);
         fgetc(pFile);
@@ -139,7 +141,7 @@ int tui(FILE *pFile)
             printf("Incorrect input! It should be a value between %d and %d", 0, MENU_ITEM_COUNT);
             choice = get_ull("\nEnter the number: ");
         }
-        menu_funcs[choice-1](records, records_num);
+        menu_funcs[choice-1](&records, &records_num);
     }
 
 
@@ -147,20 +149,19 @@ int tui(FILE *pFile)
 }
 
 
-
-int show_records(record *records, size_t records_num)
+int show_records(const record **records, const size_t *records_num)
 {
 
     if (records_num == 0)
         printf("The file is empty!\n");
     else
     {
-        for (size_t i = 0; i < records_num; i++) {
+        for (size_t i = 0; i < *records_num; i++) {
             printf("Record №%zu:\n"
                    "Region title: %s\n"
                    "Region area: %.2lf\n"
                    "Region population: %.2lf\n\n",
-                   i+1, records[i].title, records[i].area, records[i].population);
+                   i+1, (*records)[i].title, (*records)[i].area, (*records)[i].population);
         }
     }
 
@@ -168,16 +169,50 @@ int show_records(record *records, size_t records_num)
 }
 
 
-int add_records(record *records, size_t records_num)
-{
-    printf("2\n");
+int add_records(record **records, size_t *records_num) {
+    size_t records_to_add_num = get_ull("Enter number of new records: ");
+    if (records_to_add_num == 0) {
+        printf("Haven't added any records.\n");
+        return 0;
+    }
+
+    *records = realloc(*records, (*records_num + records_to_add_num) * sizeof(record));
+
+    for (size_t i = *records_num; i < *records_num + records_to_add_num; i++)
+    {
+        char *title = malloc((100 + 1) * sizeof(char));
+        printf("Enter record №%zu title ", i+1);
+        fgets(title, (int) 100, stdin);
+        strtrim(title);
+        while (*title == '\0') {
+            printf("Title must not be empty! Try again: ");
+            fgets(title, (int) 100, stdin);
+            strtrim(title);
+        }
+        (*records)[i].title = title;
+        (*records)[i].area = get_double("Enter record's area: ", 1, 0);
+        (*records)[i].population = get_double("Enter record's population: ", 1, 0);
+
+    }
+
+    *records_num = *records_num + records_to_add_num;
+    sort_records(records, records_num);
+    printf("\nSuccessfully added %zu records!\n", records_to_add_num);
+
     return 0;
 }
 
-int delete_records(record *records, size_t records_num){printf("3\n");return 0;}
-int sort_records(record *records, size_t records_num){printf("4\n");return 0;}
-int delete_file(record *records, size_t records_num){printf("5\n");return 0;}
-int exit_program(record *records, size_t records_num){printf("6\n");exit(0);}
+int delete_records(record **records, size_t *records_num){printf("3\n");return 0;}
+int change_records_sort(record **records, size_t *records_num){printf("4\n");return 0;}
+int delete_file(record **records, size_t *records_num){printf("5\n");return 0;}
+int exit_program(record **records, size_t *records_num){printf("6\n");exit(0);}
+
+int sort_records(record **records, size_t *records_num)
+{
+    if (sort_type == SORT_OFF)
+        return 0;
+    return -1;
+}
 
 size_t get_file_size(FILE *pFile)
 {
