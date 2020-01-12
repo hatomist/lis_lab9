@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     }
 
     errno = 0;
-    pFile = fopen(filepath, "a");
+    pFile = fopen(filepath, "r+");
     if (pFile == NULL)
         switch (errno)
         {
@@ -77,6 +77,54 @@ int tui(FILE *pFile)
     int (*menu_funcs[MENU_ITEM_COUNT]) (FILE *pFile) = {show_records, add_records, delete_records,
                                                         sort_records, delete_file, exit_program};
 
+    size_t file_size = get_file_size(pFile);
+    record* records;
+    if (file_size == 0) {
+        printf("The file is empty!\n");
+        records = NULL;
+    } else {
+        char *data = (char *) malloc((1000 + 1) * sizeof(char));
+
+        fscanf(pFile, "%[^\n]", data);
+        fgetc(pFile);
+
+        char* test_str = "lis_lab_9";
+        if (strcmp(test_str, data))
+        {
+            printf("Error: invalid file signature\n");
+            return -1;
+        }
+
+        fscanf(pFile, "%[^\n]", data);
+        fgetc(pFile);
+
+        int sort_type = atoi(data);
+
+        fscanf(pFile, "%[^\n]", data);
+        fgetc(pFile);
+
+        size_t records_num = atoi(data);
+
+        records = malloc(records_num * sizeof(record));
+
+        for (size_t i = 0; i < records_num; i++)
+        {
+            fscanf(pFile, "%[^\n]", data);
+            fgetc(pFile);
+            records[i].title = malloc((strlen(data) + 1) * sizeof(char));
+            strcpy(records[i].title, data);
+
+            fscanf(pFile, "%[^\n]", data);
+            fgetc(pFile);
+            records[i].area = atof(data);
+
+            fscanf(pFile, "%[^\n]", data);
+            fgetc(pFile);
+            records[i].population = atof(data);
+        }
+    }
+
+
     for(;;)
     {
         printf("Select an action for this file\n");
@@ -97,13 +145,45 @@ int tui(FILE *pFile)
 
 
 
-int show_records(FILE *pFile){printf("1\n"); return 0;}
-int add_records(FILE *pFile){printf("2\n");return 0;}
-int delete_records(FILE *pFile){printf("3\n");return 0;}
-int sort_records(FILE *pFile){printf("4\n");return 0;}
-int delete_file(FILE *pFile){printf("5\n");return 0;}
-int exit_program(FILE *pFile){printf("6\n");return 0;}
+int show_records(record *records, size_t records_num)
+{
 
+
+//    if (file_size == 0) {
+//        printf("The file is empty!\n");
+//        return 0;
+//    }
+//
+//    if (file_size < 10) {
+//        printf("Invalid file format!\n");
+//        return -1;
+//    }
+
+
+
+    return 0;
+}
+
+
+int add_records(record *records, size_t records_num)
+{
+    printf("2\n");
+    return 0;
+}
+
+int delete_records(record *records, size_t records_num){printf("3\n");return 0;}
+int sort_records(record *records, size_t records_num){printf("4\n");return 0;}
+int delete_file(record *records, size_t records_num){printf("5\n");return 0;}
+int exit_program(record *records, size_t records_num){printf("6\n");exit(0);}
+
+size_t get_file_size(FILE *pFile)
+{
+    size_t cur_pos = ftell(pFile);
+    fseek(pFile, 0, SEEK_END);
+    size_t file_size = ftell(pFile);
+    fseek(pFile, cur_pos, SEEK_SET);
+    return file_size;
+}
 
 // How to multiselect
 //size_t count = 5;
