@@ -74,11 +74,14 @@ int tui(FILE *pFile)
 
     const char* menu_items[MENU_ITEM_COUNT] = {"Show records", "Add record(s)", "Delete record(s)", "Sort by parameter",
                                          "Delete file", "Exit program"};
-    int (*menu_funcs[MENU_ITEM_COUNT]) (FILE *pFile) = {show_records, add_records, delete_records,
-                                                        sort_records, delete_file, exit_program};
+    int (*menu_funcs[MENU_ITEM_COUNT]) (record *records, size_t records_num) = {show_records, add_records,
+                                                                                delete_records, sort_records,
+                                                                                delete_file, exit_program};
 
     size_t file_size = get_file_size(pFile);
     record* records;
+    size_t records_num = 0;
+
     if (file_size == 0) {
         printf("The file is empty!\n");
         records = NULL;
@@ -103,7 +106,7 @@ int tui(FILE *pFile)
         fscanf(pFile, "%[^\n]", data);
         fgetc(pFile);
 
-        size_t records_num = atoi(data);
+        records_num = atoi(data);
 
         records = malloc(records_num * sizeof(record));
 
@@ -136,7 +139,7 @@ int tui(FILE *pFile)
             printf("Incorrect input! It should be a value between %d and %d", 0, MENU_ITEM_COUNT);
             choice = get_ull("\nEnter the number: ");
         }
-        menu_funcs[choice-1](pFile);
+        menu_funcs[choice-1](records, records_num);
     }
 
 
@@ -148,18 +151,18 @@ int tui(FILE *pFile)
 int show_records(record *records, size_t records_num)
 {
 
-
-//    if (file_size == 0) {
-//        printf("The file is empty!\n");
-//        return 0;
-//    }
-//
-//    if (file_size < 10) {
-//        printf("Invalid file format!\n");
-//        return -1;
-//    }
-
-
+    if (records_num == 0)
+        printf("The file is empty!\n");
+    else
+    {
+        for (size_t i = 0; i < records_num; i++) {
+            printf("Record №%zu:\n"
+                   "Region title: %s\n"
+                   "Region area: %.2lf\n"
+                   "Region population: %.2lf\n\n",
+                   i+1, records[i].title, records[i].area, records[i].population);
+        }
+    }
 
     return 0;
 }
