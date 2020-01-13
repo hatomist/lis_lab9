@@ -270,7 +270,7 @@ int change_records_sort(record **records, size_t *records_num)
     return 0;
 }
 
-int sort_records(record **records, size_t *records_num)
+int sort_records(record **records, const size_t *records_num)
 {
     int (*sort_comps[7]) (const void *s1, const void *s2) = {comp_none, comp_title, comp_area, comp_popul,
                                                              comp_title_rev, comp_area_rev, comp_popul_rev};
