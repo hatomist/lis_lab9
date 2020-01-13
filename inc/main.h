@@ -26,7 +26,7 @@ int delete_records(record **records, size_t *records_num);
 int change_records_sort(record **records, size_t *records_num);
 int delete_file(record **records, size_t *records_num);
 int sort_records(record **records, size_t *records_num);
-int exit_program(record **records, size_t *records_num);
+int exit_program(const record **records, const size_t *records_num);
 size_t get_file_size(FILE *pFile);
 
 

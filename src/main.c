@@ -72,8 +72,9 @@ void help(char *exec_name) {
 int tui(FILE *pFile)
 {
 
-    const char* menu_items[MENU_ITEM_COUNT] = {"Show records", "Add record(s)", "Delete record(s)", "Sort by parameter",
-                                         "Delete file", "Exit program"};
+    const char* menu_items[MENU_ITEM_COUNT] = {"Show records", "Add record(s)",
+                                               "Delete record(s)", "Sort by parameter",
+                                               "Delete file", "Exit program"};
     int (*menu_funcs[MENU_ITEM_COUNT]) (record **records, size_t *records_num) = {show_records, add_records,
                                                                                   delete_records, change_records_sort,
                                                                                   delete_file, exit_program};
@@ -92,7 +93,7 @@ int tui(FILE *pFile)
         fgetc(pFile);
 
         char* test_str = "lis_lab_9";
-        if (strcmp(test_str, data))
+        if (strcmp(test_str, data) != 0)
         {
             printf("Error: invalid file signature\n");
             return -1;
@@ -236,7 +237,7 @@ int delete_records(record **records, size_t *records_num) {
 
     for (size_t i = 0; i < (*records_num - delete_num); i++)
         if ((*records)[i].title == NULL)
-            for(size_t j = 0; j < *records_num; j++)
+            for(size_t j = i+1; j < *records_num; j++)
                 if ((*records)[j].title != NULL)
                 {
                     (*records)[i].title = (*records)[j].title;
@@ -282,7 +283,41 @@ int delete_file(record **records, size_t *records_num)
     exit(0);
 }
 
-int exit_program(record **records, size_t *records_num){printf("6\n");exit(0);}
+int exit_program(const record **records, const size_t *records_num)
+{
+
+    errno = 0;
+    FILE *pFile = fopen(filepath, "w");
+    if (pFile == NULL)
+        switch (errno)
+        {
+            case EISDIR:
+                (void)fprintf(stderr, "\"%s\" is a directory!\n", filepath);
+                exit(errno);
+            case ENOENT:
+            case EFAULT:
+                (void)fprintf(stderr, "Bad file path entered\n");
+                exit(errno);
+            case EACCES:
+                (void)fprintf(stderr, "Cannot open the file: insufficient permissions\n");
+                exit(errno);
+            default:
+                (void)fprintf(stderr, "Cannot open the file: unknown error %d\n", errno);
+                exit(errno);
+        }
+
+    fprintf(pFile, "lis_lab_9\n"
+                   "%d\n"
+                   "%zu\n",
+                   sort_type, *records_num);
+
+    for (size_t i = 0; i < *records_num; i++)
+        fprintf(pFile, "%s\n%lf\n%lf\n", (*records)[i].title, (*records)[i].area, (*records)[i].population);
+
+    fclose(pFile);
+    printf("Successfully closed the file\n");
+    exit(0);
+}
 
 int sort_records(record **records, size_t *records_num)
 {
