@@ -10,16 +10,14 @@
 #ifndef LIS_LAB9_MAIN_H
 #define LIS_LAB9_MAIN_H
 
-#define SORT_OFF   0
-#define SORT_OBL   1
-#define SORT_AREA  2
-#define SORT_POPUL 3
-
 typedef struct {char *title; double area; double population;} record;
 
 int main(int argc, char *argv[]);
 void help(char *exec_name);
+
 int tui(FILE *pFile);
+size_t get_file_size(FILE *pFile);
+
 int show_records(const record **records, const size_t *records_num);
 int add_records(record **records, size_t *records_num);
 int delete_records(record **records, size_t *records_num);
@@ -27,8 +25,14 @@ int change_records_sort(record **records, size_t *records_num);
 int delete_file(record **records, size_t *records_num);
 int sort_records(record **records, size_t *records_num);
 int exit_program(const record **records, const size_t *records_num);
-size_t get_file_size(FILE *pFile);
 
+int comp_none(const void *s1, const void *s2);
+int comp_title(const void *s1, const void *s2);
+int comp_area(const void *s1, const void *s2);
+int comp_popul(const void *s1, const void *s2);
+int comp_title_rev(const void *s1, const void *s2);
+int comp_area_rev(const void *s1, const void *s2);
+int comp_popul_rev(const void *s1, const void *s2);
 
 
 #endif //LIS_LAB9_MAIN_H

@@ -128,7 +128,6 @@ int tui(FILE *pFile)
         }
     }
 
-
     for(;;)
     {
         printf("Select an action for this file\n");
@@ -137,14 +136,11 @@ int tui(FILE *pFile)
             printf("%lu - %s\n", i+1, menu_items[i]);
         unsigned long long choice = get_ull("\nEnter the number: ");
         while (choice < 1 || choice > 6) {
-            printf("Incorrect input! It should be a value between %d and %d", 0, MENU_ITEM_COUNT);
+            printf("Incorrect input! It should be a value between %d and %d", 1, MENU_ITEM_COUNT);
             choice = get_ull("\nEnter the number: ");
         }
         menu_funcs[choice-1](&records, &records_num);
     }
-
-
-    return 0;
 }
 
 
@@ -254,9 +250,69 @@ int delete_records(record **records, size_t *records_num) {
 
 int change_records_sort(record **records, size_t *records_num)
 {
-    printf("4\n");
+    printf("0 - disable sorting\n"
+           "1 - sort by title\n"
+           "2 - sort by area\n"
+           "3 - sort by population\n"
+           "4 - sort by title (reversed)\n"
+           "5 - sort by area (reversed)\n"
+           "6 - sort by population (reversed)\n");
+
+    unsigned long long choice = get_ull("\nEnter your choice: ");
+    while (choice > 6) {
+        printf("Incorrect input! It should be a value between %d and %d", 0, 6);
+        choice = get_ull("\nEnter your choice: ");
+    }
+    sort_type = (int) choice;
+    sort_records(records, records_num);
+    printf("Successfully changed sorting parameter.\n");
+
     return 0;
 }
+
+int sort_records(record **records, size_t *records_num)
+{
+    int (*sort_comps[7]) (const void *s1, const void *s2) = {comp_none, comp_title, comp_area, comp_popul,
+                                                             comp_title_rev, comp_area_rev, comp_popul_rev};
+    qsort(*records, *records_num, sizeof(record), sort_comps[sort_type]);
+    return 0;
+}
+
+int comp_none(const void *s1, const void *s2) {return 0;}
+
+int comp_title(const void *s1, const void *s2)
+{
+    record* r1 = (record *)s1;
+    record* r2 = (record *)s2;
+    return strcmp(r1->title, r2->title);
+}
+
+int comp_area(const void *s1, const void *s2)
+{
+    record* r1 = (record *)s1;
+    record* r2 = (record *)s2;
+    if (r1->area > r2->area)
+        return 1;
+    else if (r1->area == r2->area)
+        return 0;
+    else
+        return -1;
+}
+int comp_popul(const void *s1, const void *s2)
+{
+    record* r1 = (record *)s1;
+    record* r2 = (record *)s2;
+    if (r1->population > r2->population)
+        return 1;
+    else if (r1->population == r2->population)
+        return 0;
+    else
+        return -1;
+}
+
+int comp_title_rev(const void *s1, const void *s2) {return -comp_title(s1, s2);}
+int comp_area_rev(const void *s1, const void *s2) {return -comp_area(s1, s2);}
+int comp_popul_rev(const void *s1, const void *s2) {return -comp_popul(s1, s2);}
 
 int delete_file(record **records, size_t *records_num)
 {
@@ -317,13 +373,6 @@ int exit_program(const record **records, const size_t *records_num)
     fclose(pFile);
     printf("Successfully closed the file\n");
     exit(0);
-}
-
-int sort_records(record **records, size_t *records_num)
-{
-    if (sort_type == SORT_OFF)
-        return 0;
-    return -1;
 }
 
 size_t get_file_size(FILE *pFile)
