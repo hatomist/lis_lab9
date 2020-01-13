@@ -203,7 +203,7 @@ int add_records(record **records, size_t *records_num) {
 
 int delete_records(record **records, size_t *records_num) {
     if (*records_num == 0) {
-        printf("The file is empty!");
+        printf("The file is empty!\n");
         return 0;
     }
 
