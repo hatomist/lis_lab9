@@ -2,12 +2,11 @@
 //#include "gui.h"
 
 int sort_type = 0;
-FILE *pFile;
+char *filepath = NULL;
 
 int main(int argc, char *argv[])
 {
     int opt;
-    char *filepath = NULL;
 
     while((opt = getopt(argc, argv, ":f:")) != -1)
         switch(opt)
@@ -43,7 +42,7 @@ int main(int argc, char *argv[])
     }
 
     errno = 0;
-    pFile = fopen(filepath, "r+");
+    FILE *pFile = fopen(filepath, "a+");
     if (pFile == NULL)
         switch (errno)
         {
@@ -258,7 +257,31 @@ int change_records_sort(record **records, size_t *records_num)
     return 0;
 }
 
-int delete_file(record **records, size_t *records_num){printf("5\n");return 0;}
+int delete_file(record **records, size_t *records_num)
+{
+    printf("Do you really want to delete file? [Y/n]: ");
+    char response[101];
+    scanf("%s", response);
+    while (strlen(response) != 1 && !(toupper(response[0]) == 'Y' || response[0] == 'N')) {
+        printf("Incorrect input, please enter \"y/Y\" or \"n/N\": ");
+        scanf("%s", response);
+    }
+    if (toupper(response[0]) == 'N')
+    {
+        printf("File wasn't deleted\n");
+        return 0;
+    }
+
+    if (remove(filepath) == 0)
+        printf("Successfully deleted the file!\n");
+    else {
+        printf("Unable to delete the file!\n");
+        exit(-1);
+    }
+
+    exit(0);
+}
+
 int exit_program(record **records, size_t *records_num){printf("6\n");exit(0);}
 
 int sort_records(record **records, size_t *records_num)
