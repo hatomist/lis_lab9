@@ -2,6 +2,7 @@
 //#include "gui.h"
 
 int sort_type = 0;
+FILE *pFile;
 
 int main(int argc, char *argv[])
 {
@@ -34,8 +35,6 @@ int main(int argc, char *argv[])
             default:
                 break;
         }
-
-    FILE *pFile;
 
     if (filepath == NULL)
     {
@@ -152,7 +151,7 @@ int tui(FILE *pFile)
 int show_records(const record **records, const size_t *records_num)
 {
 
-    if (records_num == 0)
+    if (*records_num == 0)
         printf("The file is empty!\n");
     else
     {
@@ -202,8 +201,63 @@ int add_records(record **records, size_t *records_num) {
     return 0;
 }
 
-int delete_records(record **records, size_t *records_num){printf("3\n");return 0;}
-int change_records_sort(record **records, size_t *records_num){printf("4\n");return 0;}
+int delete_records(record **records, size_t *records_num) {
+    if (*records_num == 0) {
+        printf("The file is empty!");
+        return 0;
+    }
+
+    show_records((const record**)records, records_num);
+    char *selection = malloc(*records_num * sizeof(char));
+    multiselect_question(selection, *records_num);
+    size_t delete_num = 0;
+    for (size_t i = 0; i < *records_num; i++)
+        if (selection[i] == '\1')
+            delete_num++;
+    printf("Do you really want to delete %zu records? [Y/n]: ", delete_num);
+    char response[101];
+    scanf("%s", response);
+    while (strlen(response) != 1 && !(toupper(response[0]) == 'Y' || response[0] == 'N')) {
+        printf("Incorrect input, please enter \"y/Y\" or \"n/N\": ");
+        scanf("%s", response);
+    }
+    if (toupper(response[0]) == 'N')
+    {
+        printf("No records were deleted\n");
+        return 0;
+    }
+
+    for (size_t i = 0; i < *records_num; i++)
+        if (selection[i] == '\1')
+        {
+            (*records)[i].title = NULL;
+            (*records)[i].population = 0;
+            (*records)[i].area = 0;
+        }
+
+    for (size_t i = 0; i < (*records_num - delete_num); i++)
+        if ((*records)[i].title == NULL)
+            for(size_t j = 0; j < *records_num; j++)
+                if ((*records)[j].title != NULL)
+                {
+                    (*records)[i].title = (*records)[j].title;
+                    (*records)[i].area = (*records)[j].area;
+                    (*records)[i].population = (*records)[j].population;
+                    (*records)[j].title = NULL;
+                    break;
+                }
+    *records_num -= delete_num;
+    *records = realloc(*records, *records_num * sizeof(record));
+    printf("Successfully deleted %zu records!\n", delete_num);
+    return 0;
+}
+
+int change_records_sort(record **records, size_t *records_num)
+{
+    printf("4\n");
+    return 0;
+}
+
 int delete_file(record **records, size_t *records_num){printf("5\n");return 0;}
 int exit_program(record **records, size_t *records_num){printf("6\n");exit(0);}
 
@@ -222,9 +276,3 @@ size_t get_file_size(FILE *pFile)
     fseek(pFile, cur_pos, SEEK_SET);
     return file_size;
 }
-
-// How to multiselect
-//size_t count = 5;
-//char *array = malloc(count);
-//multiselect_question(array, count);
-// \1 for selected, \0 for unselected
