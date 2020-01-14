@@ -226,6 +226,7 @@ int delete_records(record **records, size_t *records_num) {
     for (size_t i = 0; i < *records_num; i++)
         if (selection[i] == '\1')
         {
+            free((*records)[i].title);
             (*records)[i].title = NULL;
             (*records)[i].population = 0;
             (*records)[i].area = 0;
